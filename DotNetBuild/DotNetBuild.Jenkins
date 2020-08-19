@@ -1,0 +1,58 @@
+pipeline {
+  agent any
+	
+	environment {
+               TBSPKS='/usr/local/bin/pks'
+	       TBSKP='/usr/local/bin/kp'
+	       TBSKUBECTL='/usr/local/bin/kubectl'
+		   TBSAPP_NAME='dotnetbuild'
+        }
+	
+	stages {
+			stage('Build an image and push into harbor') {
+			  
+			  steps{
+					script {
+			         sh '$TBSPKS --version'
+				  sh 'echo "Build Started" '
+				  sh 'export PATH=$PATH:/bin:/usr/bin:/usr/local/bin'
+				  sh '$TBSPKS login -a api.pks.wipropilot.pks-wipro.com -u sudip -p $PKS_PASSWORD -k'
+				  sh 'echo $PKS_PASSWORD|$TBSPKS get-credentials demo-cluster'
+				  sh '$TBSKUBECTL config use-context demo-cluster'
+				  
+
+				try{	
+						sh '$TBSKP image create dotnetbuild harbor.wipropilot.pks-wipro.com/demo-app/dotnetbuild  --custom-cluster-builder default --wait --git "https://github.com/generic-digi-user/" + dotnetbuild --git-revision master'						    
+					}catch(error){		
+						sh '$TBSKP image trigger dotnetbuild'	
+					}
+				  sh 'echo "Build End" '
+					}	
+			  }
+			}
+			
+
+			stage('Deploy to PKS'){
+			  steps{
+					script {
+					sh 'echo "Deploy into PKS" '
+					sh '$TBSPKS login -a api.pks.wipropilot.pks-wipro.com -u sudip -p $PKS_PASSWORD -k'
+					sh 'echo $PKS_PASSWORD|$TBSPKS get-credentials demo-cluster'
+				    sh '$TBSKUBECTL config use-context demo-cluster'
+					
+					try{
+						sh '$TBSKUBECTL delete deployment $TBSAPP_NAME'
+						sh 'sleep 60'
+						sh '$TBSKUBECTL apply -f dotnetbuild-pks.yml'
+					}catch(error){
+						sh '$TBSKUBECTL apply -f dotnetbuild-pks.yml'
+						sh 'sleep 60'
+					}
+										
+					sh 'echo "End of Deployement" '
+					}
+			}
+		  }
+	  
+	}
+}
