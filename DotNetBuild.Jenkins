@@ -22,7 +22,7 @@ pipeline {
 				  
 
 				try{	
-						sh '$TBSKP image create dotnetbuild harbor.wipropilot.pks-wipro.com/demo-app/dotnetbuild  --custom-cluster-builder default --wait --git https://github.com/generic-digi-user/dotnetbuild --git-revision master'						    
+						sh '$TBSKP image create dotnetbuild harbor.wipropilot.pks-wipro.com/demo-app/dotnetbuild  --custom-cluster-builder default --wait --git https://github.com/generic-digi-user/dotnetbuild --git-revision master'	--subPath /dotnetbuild					    
 					}catch(error){		
 						sh '$TBSKP image trigger dotnetbuild'	
 					}
