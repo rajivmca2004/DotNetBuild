@@ -43,9 +43,9 @@ pipeline {
 					try{
 						sh '$TBSKUBECTL delete deployment $TBSAPP_NAME'
 						sh 'sleep 60'
-						sh '$TBSKUBECTL apply -f dotnetbuild-pks.yml'
+						sh '$TBSKUBECTL apply -f DotNetBuild-pks.yml'
 					}catch(error){
-						sh '$TBSKUBECTL apply -f dotnetbuild-pks.yml'
+						sh '$TBSKUBECTL apply -f DotNetBuild-pks.yml'
 						sh 'sleep 60'
 					}
 										
